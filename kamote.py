@@ -301,7 +301,6 @@ with st.sidebar:
 left_col, right_col = st.columns([1.08, 0.92], gap="large")
 
 with left_col:
-    st.markdown('<div class="kamote-panel">', unsafe_allow_html=True)
     controls_a, controls_b = st.columns(2)
     with controls_a:
         roast_style = st.selectbox(
@@ -348,7 +347,6 @@ with left_col:
         unsafe_allow_html=True,
     )
     run_analysis = st.button("Initiate Kamote Mode", use_container_width=True, type="primary")
-    st.markdown("</div>", unsafe_allow_html=True)
 
 with right_col:
     st.markdown('<div class="kamote-panel">', unsafe_allow_html=True)
