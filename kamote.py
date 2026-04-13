@@ -208,6 +208,14 @@ def truncate_for_model(text):
 
 
 def build_prompt(content, roast_style, response_language):
+    if response_language == "Filipino/Tagalog":
+        language_rule = (
+            "Write the entire response in natural Filipino/Tagalog. "
+            "Do not answer in English except for unavoidable quoted phrases from the source text."
+        )
+    else:
+        language_rule = "Write the entire response in English."
+
     return f"""
 Review the following writing sample using the Kamote Critic persona.
 
@@ -223,6 +231,7 @@ Return your answer in exactly these sections:
 6. Quick Writing Notes
 
 Rules:
+- {language_rule}
 - Focus much more on ideas and argument quality than on grammar or writing style.
 - Call out weak logic, unsupported claims, false dilemmas, hasty generalizations, circular reasoning, and other fallacies when present.
 - Point out ideological bias, untested assumptions, or one-sided framing when present.
