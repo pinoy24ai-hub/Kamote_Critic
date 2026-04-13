@@ -287,25 +287,9 @@ if "last_input_chars" not in st.session_state:
 
 
 with st.sidebar:
-    st.markdown("### Kamote Controls")
-    roast_style = st.selectbox(
-        "Critique style",
-        [
-            "Playful but professional",
-            "Brutal but still constructive",
-            "Professor mode",
-            "Friendly editor",
-        ],
-    )
-    response_language = st.selectbox(
-        "Written response language",
-        ["English", "Filipino/Tagalog"],
-    )
-    st.caption(
-        f"Very long inputs are trimmed to the first {MAX_INPUT_CHARS:,} characters before analysis."
-    )
+    st.markdown("### Setup")
+    st.caption("Core critique controls are now shown directly on the page for easier mobile use.")
     if not get_api_key():
-        st.markdown("### Setup")
         st.caption("Add your Gemini key in Streamlit secrets before running Kamote Mode.")
         with st.expander("Where do I put the API key?"):
             st.write(
@@ -318,6 +302,26 @@ left_col, right_col = st.columns([1.08, 0.92], gap="large")
 
 with left_col:
     st.markdown('<div class="kamote-panel">', unsafe_allow_html=True)
+    controls_a, controls_b = st.columns(2)
+    with controls_a:
+        roast_style = st.selectbox(
+            "Critique style",
+            [
+                "Playful but professional",
+                "Brutal but still constructive",
+                "Professor mode",
+                "Friendly editor",
+            ],
+        )
+    with controls_b:
+        response_language = st.selectbox(
+            "Written response language",
+            ["English", "Filipino/Tagalog"],
+        )
+
+    st.caption(
+        f"Very long inputs are trimmed to the first {MAX_INPUT_CHARS:,} characters before analysis."
+    )
     option = st.radio(
         "Pick your victim:",
         ["Online Article (URL)", "PDF Document", "Plain Text"],
