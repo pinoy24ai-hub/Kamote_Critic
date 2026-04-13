@@ -114,8 +114,8 @@ st.markdown(
         <div class="kamote-chip">Academic Roast Lab</div>
         <h1 style="margin:0; font-size:2.6rem; line-height:1.05;">The Kamote Critic</h1>
         <p class="kamote-caption" style="margin:0.65rem 0 0 0;">
-            Sharp feedback for articles, PDFs, and pasted drafts. The tone can bite,
-            but the advice should still help the writing get better.
+            Sharp feedback for articles, PDFs, and pasted drafts. The critic now digs
+            harder into ideas, logic, weak arguments, and hidden bias, not just sentence polish.
         </p>
         <div class="kamote-grid">
             <div class="kamote-card">
@@ -123,12 +123,12 @@ st.markdown(
                 URL articles, uploaded PDFs, or plain pasted text.
             </div>
             <div class="kamote-card">
-                <strong>Guided verdicts</strong>
-                Every response is structured so the feedback stays actionable.
+                <strong>Argument-first verdicts</strong>
+                The roast prioritizes claims, evidence, assumptions, fallacies, and blind spots.
             </div>
             <div class="kamote-card">
-                <strong>Optional voice mode</strong>
-                Let the critic read the verdict aloud when you want the full drama.
+                <strong>Bilingual output</strong>
+                Choose English or Filipino/Tagalog for the written verdict.
             </div>
         </div>
     </div>
@@ -140,7 +140,7 @@ st.markdown(
 BASE_SYSTEM_INSTRUCTION = """
 You are The Kamote Critic, an academic writing reviewer.
 Be specific, fair, and useful.
-Focus on clarity, structure, logic, evidence, and excess fluff.
+Prioritize depth of ideas, logic, evidence, assumptions, bias, and argumentative strength over surface writing style.
 Avoid personal attacks, slurs, or humiliation.
 Always end with practical revision advice.
 """.strip()
@@ -207,20 +207,28 @@ def truncate_for_model(text):
     return text[:MAX_INPUT_CHARS], True
 
 
-def build_prompt(content, roast_style):
+def build_prompt(content, roast_style, response_language):
     return f"""
 Review the following writing sample using the Kamote Critic persona.
 
 Tone setting: {roast_style}
+Response language: {response_language}
 
 Return your answer in exactly these sections:
-1. What Works
-2. What's Wrong
-3. Why It Matters
-4. How to Fix It
-5. Rewrite One Small Example
+1. Strong Ideas Worth Keeping
+2. Major Logical Problems
+3. Hidden Assumptions, Bias, or Fallacies
+4. What Evidence or Reasoning Is Missing
+5. How to Fix the Argument
+6. Quick Writing Notes
 
-Keep the critique witty but constructive. Make the advice concrete.
+Rules:
+- Focus much more on ideas and argument quality than on grammar or writing style.
+- Call out weak logic, unsupported claims, false dilemmas, hasty generalizations, circular reasoning, and other fallacies when present.
+- Point out ideological bias, untested assumptions, or one-sided framing when present.
+- Use a witty but constructive Kamote tone.
+- Make the advice concrete and revision-oriented.
+- Keep "Quick Writing Notes" brief and secondary.
 
 Writing sample:
 {content}
@@ -280,6 +288,10 @@ with st.sidebar:
             "Friendly editor",
         ],
     )
+    response_language = st.selectbox(
+        "Written response language",
+        ["English", "Filipino/Tagalog"],
+    )
     st.caption(
         f"Very long inputs are trimmed to the first {MAX_INPUT_CHARS:,} characters before analysis."
     )
@@ -319,7 +331,7 @@ with left_col:
         )
 
     st.markdown(
-        '<p class="kamote-caption">The critic checks for fluff, weak structure, fuzzy reasoning, and repairable writing habits.</p>',
+        '<p class="kamote-caption">The critic checks ideas first: weak logic, shaky evidence, hidden bias, fallacies, and unsupported claims. Writing notes come last.</p>',
         unsafe_allow_html=True,
     )
     run_analysis = st.button("Initiate Kamote Mode", use_container_width=True, type="primary")
@@ -330,13 +342,15 @@ with right_col:
     st.markdown("### Before You Click")
     st.write(
         """
-Use a clean article URL, a text-based PDF, or a draft you want rewritten more sharply.
-Shorter samples usually get tighter feedback. Longer ones still work, but only the opening
-portion is analyzed once the text passes the current limit.
+Use a clean article URL, a text-based PDF, or a draft you want challenged more deeply.
+The best results come from argumentative writing where claims, evidence, assumptions,
+and blind spots can be tested. Longer samples still work, but only the opening portion
+is analyzed once the text passes the current limit.
 """
     )
     st.metric("Character Limit", f"{MAX_INPUT_CHARS:,}")
     st.metric("Critique Style", roast_style)
+    st.metric("Response Language", response_language)
     st.markdown("</div>", unsafe_allow_html=True)
 
 
@@ -352,7 +366,7 @@ if run_analysis:
             st.session_state.last_input_chars = len(raw_content)
             target_content, was_trimmed = truncate_for_model(raw_content)
             model = load_model(api_key)
-            prompt = build_prompt(target_content, roast_style)
+            prompt = build_prompt(target_content, roast_style, response_language)
 
             with st.spinner("Logic Hunter is analyzing..."):
                 response = model.generate_content(prompt)
